@@ -1,5 +1,5 @@
 ; +
-; $Id: pfo_sysvar__define.pro,v 1.2 2004/01/15 17:05:49 jpmorgen Exp $
+; $Id: tok_sysvar__define.pro,v 1.1 2005/08/02 20:49:08 jpmorgen Exp jpmorgen $
 
 ; tok_sysvar__define.pro 
 
@@ -23,13 +23,47 @@ pro tok_sysvar__define
   ;; off the bat
   defsysv, '!tok', exists=tok_exists
   if tok_exists eq 1 then return
+
+  ;; I have not experimented with the newline character in all of the
+  ;; environments that IDL supports.  This works on xterms:
+  newline = string(format='(%"%s\f\r")', '')
+  ;; IDL-shell mode in emacs sets TERM to dumb and \a effectively
+  ;; works as newline.
+  if getenv("TERM") eq 'dumb' then $
+    newline = string(format='(%"%s\a")', '')
+
+  ;; For numerical small and large values, calculate some handy
+  ;; numbers in base 2.
+  ;; http://en.wikipedia.org/wiki/Single_precision 
+  ;; http://en.wikipedia.org/wiki/Double_precision
+  f_smallest = 2.^(-126) * 2.^(-23)
+  d_smallest = 2d^(-1022) * 2d^(-52)
+  ;; [fd]f is the largest single [double] precision fraction.  These
+  ;; end up calculating to something very close to 2 in decimal.
+  ff = 1. & for i=1, 23 do ff=ff + 2.^(-i)
+  df = 1d & for i=1, 52 do df=df + 2d^(-i)
+  f_largest = 2.^((2^8-2)-127) * ff
+  d_largest = 2d^((2^11-2)-1023) * df
+  ;; When we actually do calculations, like exp(alog(d_smallest)), we
+  ;; need to give the computer a little room to work.  f_small worked
+  ;; with 1.1, but do 2 just to be neat.
+  f_small = 2.^(-126) * 2
+  d_small = 2d^(-1022)
+  f_large = 2.^((2^8-2)-127)
+  d_large = 2d^((2^11-2)-1023)
+  max_int = 2^15-1
+  min_int = 2^15                ; This computes to -2^15 in decimal notation
   
+
   tok $
     = {tok_sysvar, $
+       no	:	0, $
+       yes	:	1, $
        $ ;; Use C printf-style quoted string formatting to get newline
-       $ ;; (is there a way to do this in the FORTAN style?) 
-       newline	:	string(format='(%"%s\n")', ''), $
-       $ ; PSYM
+       $ ;; Thought \n would work.  Didn't.  Started trial and error + 
+       $ ;;found \a worked!
+       newline	:	newline, $
+       $ ;; PSYM
        plus	:	1, $
        asterisk	:	2, $
        dot	:	3, $
@@ -38,21 +72,93 @@ pro tok_sysvar__define
        square	:	6, $
        psym_x	:	7, $
        hist	:	10, $
-       $ ; LINESTYLE
+       $ ;; LINESTYLE
        solid	:	0, $
        dotted	:	1, $
        dashed	:	2, $
        dash_dot	:	3, $
        dash_3dot:	4, $
        long_dash:	5, $
-       $ ; [XYZ]STYLE
+       $ ;; [XYZ]STYLE
        exact	:	1, $
        extend	:	2, $
        no_axes	:	4, $
        no_box	:	8, $
-       yfloat	:	16}
-
+       yfloat	:	16, $
+       $ ;; TEK_COLORs
+       black	:	0, $
+       white	:	1, $
+       red	:	2, $
+       green	:	3, $
+       blue	:	4, $
+       cyan	:	5, $
+       magenta	:	6, $
+       orange	:	8, $
+       $ ;; !MOUSE.BUTTON.  Also in widet draw events
+       left	:	1, $
+       middle	:	2, $
+       right	:	4, $
+       $ ;; PLOTERR plot type
+       lin_lin	:	0, $
+       lin_log	:	1, $
+       log_lin	:	2, $
+       log_log	:	3,  $
+       $ ;; Widget draw event types
+       down	:	0, $
+       up	:	1, $
+       motion	:	2, $
+       scroll	:	3, $
+       expose	:	4, $
+       char	:	5, $
+       key	:	6,  $
+       $ ;; Type codes
+       BYTE     :	1 , $ ;; Byte                     
+       INT      :	2 , $ ;; Integer                  
+       LONG     :	3 , $ ;; Longword integer         
+       FLOAT    :	4 , $ ;; Floating point           
+       DOUBLE   :	5 , $ ;; Double-precision floating
+       COMPLEX  :	6 , $ ;; Complex floating         
+       STRING   :	7 , $ ;; String                   
+       STRUCT   :	8 , $ ;; Structure                
+       DCOMPLEX :	9 , $ ;; Double-precision complex 
+       POINTER  :	10, $ ;; Pointer                  
+       OBJREF   :	11, $ ;; Object reference         
+       UINT     :	12, $ ;; Unsigned Integer         
+       ULONG    :	13, $ ;; Unsigned Longword Integer
+       LONG64   :	14, $ ;; 64-bit Integer           
+       ULONG64  :	15, $ ;; Unsigned 64-bit Integer   
+       $ ;; Units in widgets
+       pixels	:	0, $
+       inches	:	1, $
+       cm	:	2, $
+       $ ;; ![XYZ].type
+       lin	:	0, $
+       log	:	1, $
+       $ ;; ON_ERROR codes
+       stop	:	0, $
+       retall	:	1, $
+       return	:	2, $
+       ret_here	:	3, $
+       $ ;; numerical values that would have been nice to see in !values
+       f_small	:	f_small, $
+       f_large	:	f_large, $
+       d_small	:	d_small, $
+       d_large	:	d_large, $
+       min_int	:	min_int, $
+       max_int	:	max_int}
+  
   defsysv, '!tok', tok
+
+  ;; I find myself wanting to use !dradeg for double conversion
+  ;; to/from degrees:
+  defsysv, '!dradeg', exists=dradeg_exists
+  if dradeg_exists eq 0 then begin
+     defsysv, '!dradeg', 180d/!dpi
+     return
+  endif else begin
+     message, /CONTINUE, 'WARNING: system variable !dradeg already exists'
+     help, !dradeg
+  endelse
 
 end
 
