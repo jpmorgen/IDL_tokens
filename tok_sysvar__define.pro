@@ -1,5 +1,5 @@
 ; +
-; $Id: tok_sysvar__define.pro,v 1.1 2005/08/02 20:49:08 jpmorgen Exp jpmorgen $
+; $Id: tok_sysvar__define.pro,v 1.2 2011/01/20 23:04:55 jpmorgen Exp jpmorgen $
 
 ; tok_sysvar__define.pro 
 
@@ -23,15 +23,6 @@ pro tok_sysvar__define
   ;; off the bat
   defsysv, '!tok', exists=tok_exists
   if tok_exists eq 1 then return
-
-  ;; I have not experimented with the newline character in all of the
-  ;; environments that IDL supports.  This works on xterms:
-  newline = string(format='(%"%s\f\r")', '')
-  ;; IDL-shell mode in emacs sets TERM to dumb and \a effectively
-  ;; works as newline.
-  if getenv("TERM") eq 'dumb' then $
-    newline = string(format='(%"%s\a")', '')
-
   ;; For numerical small and large values, calculate some handy
   ;; numbers in base 2.
   ;; http://en.wikipedia.org/wiki/Single_precision 
@@ -53,16 +44,16 @@ pro tok_sysvar__define
   d_large = 2d^((2^11-2)-1023)
   max_int = 2^15-1
   min_int = 2^15                ; This computes to -2^15 in decimal notation
+  max_long = 2L^31-1
+  min_long = 2L^31               ; This computes to -2^31 in decimal notation
   
-
   tok $
     = {tok_sysvar, $
        no	:	0, $
        yes	:	1, $
-       $ ;; Use C printf-style quoted string formatting to get newline
-       $ ;; Thought \n would work.  Didn't.  Started trial and error + 
-       $ ;;found \a worked!
-       newline	:	newline, $
+       $ ;; Thanks to David Fanning's coyote library testlineformat.pro 
+       $ ;; for helping me find 10B (linefeed).  This works in all environments I care about
+       newline	:	string(10B), $
        $ ;; PSYM
        plus	:	1, $
        asterisk	:	2, $
@@ -145,7 +136,11 @@ pro tok_sysvar__define
        d_small	:	d_small, $
        d_large	:	d_large, $
        min_int	:	min_int, $
-       max_int	:	max_int}
+       max_int	:	max_int, $
+       min_long	:	min_long, $
+       max_long	:	max_long, $
+       $ ;; IDL's where returns -1 as an invalid index.  Call the invalid index (which, in IDL 8 is no longer inalid (sigh), "nowhere"
+       nowhere	:	-1L}
   
   defsysv, '!tok', tok
 
