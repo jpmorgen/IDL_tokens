@@ -1,20 +1,51 @@
+;+
+; NAME: tok_sysvar__define
+;
+; PURPOSE: Define a system variable that contains tokens so that code
+; reads in English
+;
+; CATEGORY: Infrastructure
+;
+; CALLING SEQUENCE: init = {tok_sysvar}
+;
+; DESCRIPTION: Put the calling sequence at the top of your program and
+; get access to handy tokens for things so that code can read in
+; English rather than number.
+;
+; INPUTS:
+;
+; OPTIONAL INPUTS:
+;
+; KEYWORD PARAMETERS:
+;
+; OUTPUTS:
+;
+; OPTIONAL OUTPUTS:
+;
+; COMMON BLOCKS:  
+;   Common blocks are ugly.  Consider using package-specific system
+;   variables.
+;
+; SIDE EFFECTS:
+;
+; RESTRICTIONS:
+;
+; PROCEDURE:
+;
+; EXAMPLE:
+;
+;   init = {tok_sysvar}
+;   x = [1,2,3] & y = [4,5,6]
+;   plot, x, y, psym=!tok.square, xstyle=!tok.extend, ystyle=!tok.exact+!tok.extend
+;
+; MODIFICATION HISTORY:
+;
+; $Id: tok_sysvar__define.pro,v 1.3 2011/09/14 19:34:00 jpmorgen Exp jpmorgen $
+;
+; $Log:$
+;-
 ; +
-; $Id: tok_sysvar__define.pro,v 1.2 2011/01/20 23:04:55 jpmorgen Exp jpmorgen $
-
 ; tok_sysvar__define.pro 
-
-; This procedure makes use of the handy feature in IDL 5 that calls
-; the procedure mystruct__define when mystruct is referenced.
-; Unfortunately, if IDL calls this proceedure itself, it uses its own
-; idea of what null values should be.  So call explicitly with an
-; argument if you need to have a default structure with different
-; initial values, or as in the case here, store the value in a system
-; variable.
-
-;; This defines the !tok system variable, which contains global
-;; variables handy for remembering the arbitrary numbers IDL uses
-;; everywhere.
-
 ; -
 
 pro tok_sysvar__define
@@ -25,6 +56,7 @@ pro tok_sysvar__define
   if tok_exists eq 1 then return
   ;; For numerical small and large values, calculate some handy
   ;; numbers in base 2.
+  ;; --> should use IDL's machar for this instead
   ;; http://en.wikipedia.org/wiki/Single_precision 
   ;; http://en.wikipedia.org/wiki/Double_precision
   f_smallest = 2.^(-126) * 2.^(-23)
@@ -62,6 +94,7 @@ pro tok_sysvar__define
        triangle	:	5, $
        square	:	6, $
        psym_x	:	7, $
+       usersym	:	8, $
        hist	:	10, $
        $ ;; LINESTYLE
        solid	:	0, $
@@ -139,7 +172,7 @@ pro tok_sysvar__define
        max_int	:	max_int, $
        min_long	:	min_long, $
        max_long	:	max_long, $
-       $ ;; IDL's where returns -1 as an invalid index.  Call the invalid index (which, in IDL 8 is no longer inalid (sigh), "nowhere"
+       $ ;; IDL's where returns -1 as an invalid index.  Call the invalid index (which, in IDL 8 is no longer inalid (sigh)), "nowhere"
        nowhere	:	-1L}
   
   defsysv, '!tok', tok
