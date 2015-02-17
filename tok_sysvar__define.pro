@@ -40,13 +40,13 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-; $Id: tok_sysvar__define.pro,v 1.3 2011/09/14 19:34:00 jpmorgen Exp jpmorgen $
+; $Id: tok_sysvar__define.pro,v 1.4 2015/02/16 21:47:36 jpmorgen Exp $
 ;
-; $Log:$
+; $Log: tok_sysvar__define.pro,v $
+; Revision 1.4  2015/02/16 21:47:36  jpmorgen
+; Summary: Last check-in before git
+;
 ;-
-; +
-; tok_sysvar__define.pro 
-; -
 
 pro tok_sysvar__define
   ;; System variables cannot be redefined and named structures cannot
