@@ -86,6 +86,7 @@ pro tok_sysvar__define
        $ ;; Thanks to David Fanning's coyote library testlineformat.pro 
        $ ;; for helping me find 10B (linefeed).  This works in all environments I care about
        newline	:	string(10B), $
+       angstrom :	string("305B), $ ;; " complete the quote.  Still breaks indent in IDLWAVE
        $ ;; PSYM
        plus	:	1, $
        asterisk	:	2, $
